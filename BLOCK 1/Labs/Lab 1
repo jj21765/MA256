@@ -1,0 +1,59 @@
+library(tidyverse)
+setwd("C:/Users/x27425/Desktop")
+sil_one=read.csv("SIL_1_Data.csv")
+sil_one%>%
+  summarise(Sugar_Intake_1963_mean=mean(Sugar.Intake.1963))
+sil_one%>%
+  summarise(Sugar_Intake_1963_sd=sd(Sugar.Intake.1963))
+sil_one%>%
+  summarise(Sugar_Intake_1988_mean=mean(Sugar.Intake.1988))
+sil_one%>%
+  summarise(Sugar_Intake_1988_sd=sd(Sugar.Intake.1988))
+sil_one%>%
+  summarise(Sugar_Intake_2013_mean=mean(Sugar.Intake.2013))
+
+sil_one%>%
+  summarise(Sugar_Intake_2013_sd=sd(Sugar.Intake.2013))
+sil_one%>%
+  group_by(Income.Level.1963)%>%
+  summarise(Sugar_Intake_Mean=mean(Sugar.Intake.1963),Sugar_Intake_sd=sd(Sugar.Intake.1963), Sample_Size = n())
+sil_one%>%
+  group_by(Income.Level.1988)%>%
+  summarise(Sugar_Intake_Mean=mean(Sugar.Intake.1988),Sugar_Intake_sd=sd(Sugar.Intake.1988), Sample_Size = n())
+sil_one%>%
+  group_by(Income.Level.2013)%>%
+  summarise(Sugar_Intake_Mean=mean(Sugar.Intake.2013),Sugar_Intake_sd=sd(Sugar.Intake.2013), Sample_Size = n())
+sil_one%>%
+  ggplot(aes(x=Sugar.Intake.1963))+geom_histogram()+
+  labs(x="Mean Sugar Intake in 1963 (grams per person per day)", y="Count",title="Average Sugar Intake in grams in 1963")
+sil_one%>%
+  filter(Sugar.Intake.1963<=500)%>%
+  ggplot(aes(x=Sugar.Intake.1963))+geom_histogram()+
+  labs(x="Mean Sugar Intake in 1963 (grams per person per day)", y="Count",title="Average Sugar Intake in grams in 1963")
+
+Change_Life_Sugar=sil_one%>%
+  mutate(Change_Life=Life.Expectancy.2013-Life.Expectancy.1963,Change_Sugar=Sugar.Intake.2013-Sugar.Intake.1963)
+ 
+Change_Life_Sugar%>%
+  select(Change_Life,Change_Sugar)%>%
+  filter(Change_Sugar>0)%>%
+  ggplot(aes(x=Change_Life))+geom_histogram()+
+  labs(x="Change in Life Expectancy between 1963 and 2013", y="Count",title="Change in Life Expectancy with Increase in Sugar Intake")
+
+Change_Life_Sugar%>%
+  select(Change_Life,Change_Sugar)%>%
+  filter(Change_Sugar<=0)%>%
+  ggplot(aes(x=Change_Life))+geom_histogram()+
+  labs(x="Change in Life Expectancy between 1963 and 2013", y="Count",title="Change in Life Expectancy with Decrease in Sugar Intake")
+
+sil_one%>%
+  ggplot(aes(x = Sugar.Intake.1963,y=Life.Expectancy.1963,col=Income.Level.1963))+geom_point()+
+  labs(x="Sugar Intake 1963 (grams per person per day)",y="Life Expectancy (years)",title = "Change In Life Expectancy with Change in Sugar Intake 1963",color="Income Level")
+  
+sil_one%>%
+  ggplot(aes(x = Sugar.Intake.2013,y=Life.Expectancy.2013,col=Income.Level.2013))+geom_point()+
+  labs(x="Sugar Intake 2013 (grams per person per day)",y="Life Expectancy (years)",title = "Change In Life Expectancy with Change in Sugar Intake 2013",color="Income Level")
+
+sil_one%>%
+  ggplot(aes(x=Life.Expectancy.1988,y=Income.Level.1988))+geom_point()+
+  labs(x="Life Expectancy 1988",y="Income Level 1988",title="Life Expectancy vs Income Level 1988")
