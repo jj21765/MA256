@@ -1,0 +1,53 @@
+setwd("C:/Users/Esther Kang/Downloads")
+library("tidyverse")
+
+Used.Cars=read_csv("chap3.UsedCars.csv")
+t.test(x=Used.Cars$Price,alternative="two.sided",conf.level=.95)
+
+Replications=NULL
+Num.Reps=1000
+Null.Prob=1/3
+Sample.Size=12
+Sample.Stat=.167
+
+for(i in 1:Num.Reps){
+  Trials=sample(x=c(1,0),size=Sample.Size,prob=c(Null.Prob,1-Null.Prob),replace=TRUE)
+  
+  Proportion=sum(Trials)/Sample.Size
+  Replications=rbind(Replications,data.frame(Proportion))
+  }
+
+Replications%>%
+  ggplot(aes(x=Proportion))+
+  geom_histogram()+
+  labs(x="Proportion of Success",y="Count")+
+  geom_vline(xintercept = Sample.Stat,color="red")
+
+Used.Cars%>%
+  count(Price)
+
+setwd("C:/Users/Esther Kang/Downloads")
+Halloween = read_csv("chap1.Halloween.csv")
+Halloween%>%
+  count(Selection)
+sample_proportion=148/(135+148)
+print(sample_proportion)
+std=sqrt(0.5*(1-0.5)/283)
+print(std)
+
+z=(sample_proportion-0.5)/std
+print(z)
+
+2*(1-pnorm(abs(z)))
+#alternate hypothesis, >
+1-pnorm(z)
+#alternate hypothesis, <
+pnorm(z)
+
+#based on theory based approach, standard dev is greater than 2
+#df is degrees of freedom, which is n-1
+#the greater the df, the more the t distribution
+#looks like the normal distribution
+#x-> p(t)-> area under curve
+#area->q(t)-> x value 
+qt(0.025,,df=39)
