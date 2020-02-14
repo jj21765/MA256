@@ -1,0 +1,16 @@
+#pooled p hat
+phat = (seedSuccess + noSeedSuccess)/(seedN + noSeedN)
+
+#standardized Statistic
+pooldSE=sqrt(phat*(1-phat)*((1/seedN)+(1/noSeedN)))
+
+#find p-value from standardized statistic
+2*(1-pnorm(abs(z)))
+
+#SE for confidence interval
+SE=sqrt((SamplePropSeed*(1-SamplePropSeed))/seedN)+
+  ((SamplePropNoSeed*(1-SamplePropNoSeed))/noSeedN)
+
+#confidence Interval
+SampleDiffInProp + 1.96 * SE
+SampleDiffInProp - 1.96 * SE
