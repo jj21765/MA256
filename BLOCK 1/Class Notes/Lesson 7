@@ -1,0 +1,29 @@
+Replications=NULL
+
+Num.Reps=1000
+Sample.Size=2124
+Null.Prob=.25
+Sample.Stat=.334
+
+for(i in 1:Num.Reps){
+  
+  Trials = sample(x = c(1,0),size = Sample.Size,prob = c(Null.Prob,1-Null.Prob),replace = TRUE)
+  
+  Proportion = sum(Trials)/Sample.Size
+  Replications = rbind(Replications,data.frame(Proportion))
+  
+}
+Replications%>%
+  ggplot(aes(x=Proportion))+
+  geom_histogram()+
+  labs(x="Proportion of Success",y="Count")+
+  geom_vline(xintercept=Sample.Stat,color="red")
+
+Replications%>%
+  summarize(p.value=sum(Proportion>=Sample.Stat)/n())
+
+n<- 2124
+pi<-0.25
+phat<-709/n
+stdev<-sqrt((pi*(1-pi))/n)
+z<-(phat-pi)/stdev
