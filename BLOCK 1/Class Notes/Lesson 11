@@ -1,0 +1,71 @@
+library(tidyverse)
+
+setwd("C:/Users/Esther Kang/Downloads")
+
+GeyserData = read_csv("chap6.OldFaithful.csv")
+?group_by
+
+GeyserData%>%
+  group_by(year)%>%
+  do(data.frame(t(quantile(.$time,probs=c(0.25,0.5,0.75,1)))))
+#this creates the box plot, or sets it up by showing the min, 25th percentile
+#median, 75%, and max
+
+GeyserData%>%
+  ggplot(aes(x = as.factor(year),y = time)) + geom_boxplot() +
+  labs(x = "Year", y = "Inter-eruption time (mins)",title = "Inter-eruption time 
+       (mins) by year")
+#here, the actual box plot is created using geom_boxplot()
+?ggplot
+#ggplot(aes..) is useful in that it specifies the data frame being used, the x and
+#y are the so called "aesthetics ,and while
+#ggplot(df, aes) is recommented when all layers are using the same data set and
+#the same set of aesthetics 
+
+closeFriends = read_csv("CloseFriends.csv")
+
+closeFriends%>%
+  ggplot(aes(x=as.factor(Sex),y = Friends))+
+  geom_boxplot()+
+  labs(x = "Sex", y = "Number of Close Friends", title = "Number of Close Friends by Sex")
+
+closeFriends %>%
+  group_by(Sex)%>%
+  do(data.frame(t(quantile(.$time,probs=c(0.25,.5,0.75,1)))))
+
+closeFriends%>%
+  ggplot(aes(x=Friends, fill=as.factor(Sex)))+
+  geom_density(alpha=0.9)
+
+sampMeanWomen <- closeFriends%>%
+  filter(Sex == 'Women')%>%
+  summarise(meanWomen = mean(Friends))
+
+sampMeanMen <- closeFriends %>%
+  filter(Sex == 'Men')%>%
+  summarise(meanMen = mean(Friends))
+
+sampDiffOfMean <- sampMeanMen$meanMen - sampMeanWomen$meanWomen
+
+reps = 1000
+DiffOfMeansDF <- NULL
+?replace
+for(i in 1:reps){
+  NewSex <- sample(c('Men','Women'), size = nrow(closeFriends),
+                   prob = c(645/1467,813/1467), replace)
+  #there was somethign else, another confounding variable that causes the
+  #response, not just the variables you define, so now were assigning a sex
+  closeFriends2 <- cbind(closeFriends,NewSex)
+  
+  meanMen <- closeFriends2 %>%
+    filter(NewSex == 'Men')%>%
+    summarise(meanMen = mean(Friends))
+  
+  meanWomen <- closeFriends2 %>%
+    filter(NewSex == 'Women')%?%
+    summarise(meanWomen = mean(Friends))
+}
+
+DiffOfMeansDF %>%
+  summarize(p.value=(sum(DiffOfMean <= sampDiffOfMean)+
+                       sum(DiffOfMean >= -sampDiffOfMean))/n())
