@@ -1,0 +1,176 @@
+---
+title: "SIL 4"
+author: "Esther Kang"
+date: "4/12/2020"
+output: word_document
+---
+STEP 1: Ask a research question
+
+1. Given a NYT Obituary from 2009-2011, is there an association between disease-associated mortality and careers of famous practitioners? Could a hypothesis be generated regarding a possible cause and effect relationship of diseased death and high career achievement? 
+
+2. This study mentions that US newspapers describe the including of medicinal deaths in the NYT obituaries as "irksome," most likely because they feel it is unneccessary information. However, the availability of this data is what allowed for this study to analyze, to some level, the cause and/or effects of "high career achievement and fame." Also, previous observational studies indicated shorter life spans for high achieving individuals, and this study, by analyzing a group of only high achieving individuals, can either support or refute previous results. 
+
+6. Brisbane AS. The science of obituaries: dead pools, obits in
+the can, and more. The New York Times 2012 April 16.
+20. Redelmeier DA, Kwong JC. Death rates of medical school
+class presidents. Soc Sci Med 2004; 58:2537–43.
+
+STEP 2: Design a study and collect data 
+
+3. The observational units are each individual listed in the NYT obituary. 
+
+4. The sample size was supposed to be 1000, but because of deleted data, ended up being 999. 
+
+5. OCCUPATION(categorical variable), OCC.CATEGORY (categorical variable), CAUSE OF DEATH(categorical variable), DEATH CATEGORY(categorical variable), Before70 (quantitative)
+
+6. The explanatory variable is sex(quantitative), and the response variable is the proportion of men and women who died before the age of 70 (quantitative). 
+
+7. The parameter of interest is the proportion of people in each sex category who died before 70. (special characer, mu)
+
+8. null hypothesis: there is no association between sex and the proportion of people who died before 70. 
+   alternative hypothesis: There is an association between sex and the proportion of people who died before 70
+   
+9. symbols? 
+H0: pif = pim
+Ha: pif != pim
+
+STEP 3: Explore the data
+```{r}
+##PROBLEM 10
+
+library(tidyverse)
+library(readr)
+
+sil4 <- read_csv("SIL_4_Data.csv")
+
+#FINDING STATISTIC FOR FEMALES
+F <- sil4 %>%
+  filter(SEX == "F")
+numF <- F %>%
+  summarise(sum(Before70))
+propF <- numF$`sum(Before70)`/length(F$SEX)
+print(propF)
+
+#FINDING STATISTIC FOR MALES 
+M <- sil4 %>%
+  filter(SEX == "M") 
+numM <- M %>%
+  summarise(sum(Before70))
+length(M$X1)
+length(F$X1)
+propM <- numM$`sum(Before70)`/length(M$SEX)
+print(propM)
+```
+
+STEP 4: Draw Inferences
+
+11. Determine the p-value 
+```{r}
+#PROBLEM 11
+
+stat <- propF-propM
+
+phat <- (numF$`sum(Before70)`+numM$`sum(Before70)`)/999
+z <- stat/sqrt(phat*(1-phat)*((1/length(M$SEX))+(1/length(F$SEX))))
+pval <- 2*(1-pnorm(abs(z)))
+
+print(pval)
+```
+a) The validity conditions for comparing two proportions is that there are 20 observations in each group (Female, Male), and there is a normal distribution. There are 186 observations in the Female group and 813 observations in the Male group, so the first validity condition is met. 
+
+b) the p-value is 0.003758
+```{r}
+print(pval)
+```
+
+c)The p-value is less than 0.02, as mentioned in the paper 
+
+```{r}
+#PROBLEM 12
+DiffinProp <- propF-propM
+SE <- sqrt(((propF*(1-propF))/length(F$SEX))+((propM*(1-propM))/length(M$SEX)))
+#95% confidence interval
+DiffinProp + 1.96*SE
+DiffinProp - 1.96*SE
+```
+13. Based on the hypothesis test, because the p-value is significantly less than 0.01, it indicates very strong evidence against the null. Therefore, there is an association between sex and the proportion of people in each group who die before 70. In other words, the difference in the two proportions is not equal to 0, and there is a difference between the two. The confdience interval calculated does not contain the value of 0, which aligns with the conclusion from the hypothesis test that there is always a difference. 
+
+STEP 5: Formulate Conclusions
+
+14. Based on the p-value of 0.003758, as it is significantly less than 0.01, this indicates that there is significant evidence against the null hypothesis. 
+
+15. In the long run, I am 95% confident that the difference in proportions between males who die before 70 and females who die before 70 lies between 0.02292608 and 0.157727. 
+
+16. The explanatory variable is sex (quantitative, binary), and the response variable is the average age of death in each group (quantitative). 
+
+17. The parameter of interest is the difference in average age of death of females and males. (muf, mum)
+
+18. null hypothesis: There is no association between sex and the average age of death of females and males. 
+    alternate hypothesis: There is an association between sex and the average age of death of females and males. 
+    
+19. H0: muf = mum
+    Ha: muf != mum
+    
+```{r}
+#PROBLEM 20 
+
+#women data frame 
+women <- sil4 %>%
+  filter(SEX == "F") %>%
+  select(AGE) %>%
+  as.data.frame()
+#average age for women 
+meanAgeW <- women %>%
+  summarise(mean(AGE))
+AgeW <- meanAgeW$`mean(AGE)`
+#men data frame 
+men <- sil4 %>%
+  filter(SEX == "M") %>%
+  select(AGE) %>%
+  as.data.frame()
+#average age for men 
+meanAgeM <- men %>%
+  summarise(mean(AGE))
+AgeM <- meanAgeM$`mean(AGE)`
+```
+
+
+```{r}
+#PROBLEM 21
+
+t.test(x = women, y = men, alternative = "two.sided", conf.level = 0.95)
+```
+
+a) The validity conditions for a two-sample t-test are that the quantitative variable has a symmetric distribution or there are at least 20 observations in each group and the data is not strongly skewed. Based on the boxplot comparison shown below, the data does not show a necessarily normal distribution because there are outliers in both male and female age distribution, particularly for males. However, looking at the other condition, there are at least 20 observations in each group or category, and the data is not strongly skewed, so the validity conditions are met.
+```{r}
+library(ggplot2)
+sil4 %>%
+  ggplot(aes(x = as.factor(SEX),y = AGE)) + geom_boxplot() + 
+  labs(x = "Sex", y = "Age", title = "Age Distribution by Sex")
+```
+
+b) The p-value is 0.1841
+
+```{r}
+#PROBLEM 22
+t.test(x = women, y = men, alternative = "two.sided", conf.level = 0.95)
+```
+The confidence interval is (-3.8447604, 0.7424313)
+
+23. Given the p-value of 0.1841, which is greater than 0.1, there is weak evidence against the null. 
+
+24. In the long run, I am 95% confident that the average age of death for women minus the average age of death for men is between -3.8447604 and 0.7424313. 
+
+STEP 5: Forumalate conclusions continued 
+
+25. According to the study, a greater percentage of women had an occupation in performance/sports (38.0% compared to 18.4% of males) and a greater a percentage of men had an occupation in professional/academic/religious occupations (26.7% compared to 12.3% of females). And within occupations, individuals in performance/sports related jobs died at an average age of 77.2, while individuals in professional/academic jobs died at an average age of 81.7. Thus, women, who according to the NYT tend to have a greater proportion of individuals in occupations that lead to younger age death, have overall a lower average age at death than men. 
+
+26. Based on the two hypothesis tests, sex does have an association with whether or not individuals die before the age of 70, it doesn't mean it has an association with the overall average age of death. Rather, because sex has an association with death before 70, there is a difference in the proportion of individuals who die before 70, which is shown that a greater proportion of women die before 70. However, given there is a different population size for both, the average age of death in each group doesn't have a strong enough association with sex, which is why other factors such as occupation most likely have a stronger association with the average age of death, and is a more effective reasoning as to why women die at a younger average age. 
+
+27. No, this study does not constitute a random sample. Those in the study are famous or well-achieving individuals, and what is defined as "well-achieving" can create bias as to who is shown in the obituary and who isn't. Also, the obituary may focus on certain diseases than others in order to gain more attention. 
+
+STEP 6: Look back and ahead 
+
+28. When discussing the percentages of death due to particular diseases, the study found that up to 43% of NYT deaths were due to cancer and 31% due to cardiovascular disease. However, for US national averages, deaths due to cancer are at 29% with deaths due to cardiovascular disease at 30%. This may be due to the fact that cancer is a more well-known disease, or a coincidence that a higher proportion of famous individuals die of cancer, which may lead to a higher presence of individuals shown on the obituary whos cause of death is cancer. 
+
+
