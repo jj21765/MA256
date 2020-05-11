@@ -1,0 +1,124 @@
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+setwd("C:/Users/Esther Kang/Downloads")
+gaming <- read_csv("gamingscores.csv")
+
+gamingData <- gaming %>%
+  drop_na()%>%
+  mutate("diffW" = WordProcPosttest-WordProcPretest)%>%
+  mutate("diffS" = SpreadsheetsPosttest-SpreadsheetsPretest)%>%
+  mutate("diffP" = PresentationPosttest-PresentationPretest)%>%
+  mutate("diffD" = DatabasesPosttest-DatabasesPretest)%>%
+  mutate(diffinscores = (diffW+diffS+diffP+diffD)/4)%>%
+  mutate(avgpre = (WordProcPretest+SpreadsheetsPretest+PresentationPretest+DatabasesPretest)/4)
+
+
+
+gamingData <- gaming %>%  
+  drop_na()%>%
+  mutate(avgpre = mean(c(WordProcPretest,SpreadsheetsPretest,PresentationPretest,DatabasesPretest)))
+
+  
+  
+control <- gamingData %>%
+  filter(Group == 0)%>%
+  mutate("Group0" = Group,"Gender0" = Gender, "diffinscores0" = diffinscores,"FinalExamination0" = FinalExamination) %>%
+  select(Group0,Gender0,diffinscores0,FinalExamination0)
+control[nrow(control)+1,] <- NA
+
+educational <- gamingData %>%
+  filter(Group == 1)%>%
+  mutate("Group1" = Group,"Gender1" = Gender, "diffinscores1" = diffinscores,"FinalExamination1" = FinalExamination) %>%
+  select(Group1,Gender1,diffinscores1,FinalExamination1)
+educational[nrow(educational)+1,] <- NA
+educational[nrow(educational)+1,] <- NA
+
+gamification <- gamingData %>%
+  filter(Group == 2) %>%
+  mutate("Group2" = Group,"Gender2" = Gender, "diffinscores2" = diffinscores,"FinalExamination2" = FinalExamination) %>%
+  select(Group2,Gender2,diffinscores2,FinalExamination2)
+
+socialNet <- gamingData %>%
+  filter(Group == 3) %>%
+  mutate("Group3" = Group,"Gender3" = Gender, "diffinscores3" = diffinscores,"FinalExamination3" = FinalExamination) %>%
+  select(Group3,Gender3,diffinscores3,FinalExamination3)
+socialNet[nrow(socialNet)+1,] <- NA
+socialNet[nrow(socialNet)+1,] <- NA
+
+socialGam <- gamingData %>%
+  filter(Group == 4) %>%
+  mutate("Group4" = Group,"Gender4" = Gender, "diffinscores4" = diffinscores,"FinalExamination4" = FinalExamination) %>%
+  select(Group4,Gender4,diffinscores4,FinalExamination4)
+socialGam[nrow(socialGam)+1,] <- NA
+
+new <- cbind(control,educational,gamification,socialNet,socialGam)
+
+model= lm(FinalExamination~diffinScores+diffinscores1+diffinscores2+diffinscores3+diffinscores4, data=new)
+summary(model)
+
+model = lm(FinalExamination~avgpre + as.factor(Group) + diffinscores, data = gamingData)
+model1 = lm(FinalExamination~avgpre+as.factor(Group)+Gender, data = gamingData)
+summary(model1)
+
+ggplot(gamingData,aes(x=avgpre, y = FinalExamination, color = as.factor(Group))) +
+  geom_point() + geom_smooth(method="lm")
+
+ggplot(gamingData,aes(x = FinalExamination, y = diffinscores, color = as.factor(Gender)))+
+  geom_boxplot() + geom_smooth(method="lm")
+#average pretest score rather than diff inscores
+
+model1 %>%
+  ggplot(aes(x=.resid))+
+  geom_histogram()
+
+ggplot(gamingData, aes(x = gamingData$avgpre)) + geom_histogram() + facet_wrap(~Group)+
+  labs( x = "Average Difference in Scores by Group")
+#validity conditions (linear reg: resid vs predicted)
+#linearity and equal variance 
+#graph of pre vs final (overall) // direction/strength/unusual obs 
+#boxplot of final scores by gender 
+ggplot(gamingData, aes(x=avgpre, y = FinalExamination)) +geom_point()+theme_minimal()
+
+ggplot(gamingData,aes(x=gamingData$Gender, y = gamingData$FinalExamination)) + 
+  geom_boxplot()
+
+model1%>%
+  fortify()%>%
+  ggplot(aes(x = .fitted, y = .resid))+
+  geom_point()+
+  geom_hline(yintercept = 0)+
+  labs( x = "Predicted Values", y = "Residuals", title = "Residuals vs. predicted values")
+
+zero <- gamingData %>%
+  filter(Group == "0")%>%
+  mutate(mean(avgpre))
+print(zero$`mean(avgpre)`)
+one <- gamingData %>%
+  filter(Group == "1")%>%
+  mutate(mean(avgpre))
+print(one$`mean(avgpre)`)
+two <- gamingData %>%
+  filter(Group == "2")%>%
+  mutate(mean(avgpre))
+print(two$`mean(avgpre)`)
+three <- gamingData %>%
+  filter(Group == "3")%>%
+  mutate(mean(avgpre))
+print(three$`mean(avgpre)`)
+four <- gamingData %>%
+  filter(Group == "4")%>%
+  mutate(mean(avgpre))
+print(four$`mean(avgpre)`)
+length(zero$Group)
+length(one$Group)
+length(two$Group)
+
+F <- gamingData %>%
+  filter(Gender == "F") %>%
+  mutate(mean(avgpre))
+print(F$`mean(avgpre)`)
+M <- gamingData %>%
+  filter(Gender == "M") %>%
+  mutate(mean(avgpre))
+print(M$`mean(avgpre)`)
