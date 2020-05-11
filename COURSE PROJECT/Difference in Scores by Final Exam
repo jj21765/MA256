@@ -1,0 +1,164 @@
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+setwd("C:/Users/Esther Kang/Downloads")
+gaming <- read_csv("gamingscores.csv")
+
+#number of females 
+numF <- gaming %>%
+  filter(gaming$Gender == "F" ) %>%
+  count(Gender)
+#number of males
+numM <- gaming %>%
+  filter(gaming$Gender == "M") %>%
+  count(Gender)
+
+#set up new variables, difference in scores 
+gamingData <- gaming %>%
+  mutate("diffW" = WordProcPosttest-WordProcPretest)%>%
+  mutate("diffS" = SpreadsheetsPosttest-SpreadsheetsPretest)%>%
+  mutate("diffP" = PresentationPosttest-PresentationPretest)%>%
+  mutate("diffD" = DatabasesPosttest-DatabasesPretest)%>%
+  mutate(diffinscores = (diffW+diffS+diffP+diffD)/4)%>%
+  arrange(diffinscores)
+
+meanF <- gamingData %>%
+  filter(gamingData$Gender == "F")%>%
+  drop_na() %>%
+  summarise(sum(diffinscores)/212)
+meanfF <- gamingData %>%
+  filter(gamingData$Gender == "F")%>%
+  drop_na() %>%
+  summarise(sum(FinalExamination)/212)
+meanM <- gamingData %>%
+  filter(gamingData$Gender == "M") %>%
+  drop_na() %>%
+  summarise(sum(diffinscores)/167)
+meanfM <- gamingData %>%
+  filter(gamingData$Gender == "M") %>%
+  drop_na() %>%
+  summarise(sum(FinalExamination)/167)
+
+
+#creating dataframe for group 0
+control <- gamingData %>%
+  filter(gaming$Group == 0) %>%
+  select(Group, Gender,FinalExamination,diffW, diffS, diffP, diffD) %>%
+  arrange(Gender) %>%
+  mutate(diffinScores = (diffW + diffS + diffP + diffD)/4)
+
+#creating dataframe for group 1
+educational <- gamingData %>%
+  filter(gaming$Group == 1) %>%
+  select(Group, Gender,FinalExamination,diffW, diffS, diffP, diffD) %>%
+  arrange(Gender) %>%
+  mutate(diffinScores = (diffW + diffS + diffP + diffD)/4)
+
+#creating dataframe for group 2
+gamification <- gamingData %>%
+  filter(gaming$Group == 2) %>%
+  select(Group, Gender,FinalExamination,diffW, diffS, diffP, diffD) %>%
+  arrange(Gender) %>%
+  mutate(diffinScores = (diffW + diffS + diffP + diffD)/4)
+
+#creating dataframe for group 3
+socialNet <- gamingData %>%
+  filter(gaming$Group == 3) %>%
+  select(Group, Gender,FinalExamination,diffW, diffS, diffP, diffD) %>%
+  arrange(Gender) %>%
+  mutate(diffinScores = (diffW + diffS + diffP + diffD)/4)
+
+#creating dataframe for group 4
+socialGam <- gamingData %>%
+  filter(gaming$Group == 4) %>%
+  select(Group, Gender,FinalExamination,diffW, diffS, diffP, diffD) %>%
+  arrange(Gender) %>%
+  mutate(diffinScores = (diffW + diffS + diffP + diffD)/4)
+
+#---------------------------------------------------------------------------------
+#checking for validity: distribution of differences
+
+#distribution of differences for each grup
+ggplot(gamingData, aes(x = gamingData$diffinscores)) + geom_histogram() + facet_wrap(~Group)+
+  labs( x = "Average Difference in Scores by Group")
+
+#----------------------------------------------------------------------------------
+#box plot to compare gender and final exam scores
+
+ggplot(gamingData,aes(x=gamingData$Gender, y = gamingData$FinalExamination)) + 
+  geom_boxplot()
+#----------------------------------------------------------------------------------
+#linear regression models: 
+
+#avg diff in scores vs final exam 
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffinscores)) + geom_point()+
+  labs(x="Final Examination Scores", y="Average Diff in Scores per person") + geom_abline()
+model = lm(gamingData$diffinscores ~ gamingData$FinalExamination)
+summary(model)
+
+#regression of diff in word 
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffW)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Word") +geom_abline()
+model=lm(gamingData$diffW ~ gamingData$FinalExamination)
+summary(model)
+
+#regression of diff in powerpoint 
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffP)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Powerpoint") +geom_abline()
+model=lm(gamingData$diffP ~ gamingData$FinalExamination)
+summary(model)
+
+#regression of diff in spreadsheet 
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffS)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Spreadsheet") +geom_abline()
+model=lm(gamingData$diffS ~ gamingData$FinalExamination)
+summary(model)
+
+#regression of diff in databases
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffD)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Databases") +geom_abline()
+model=lm(gamingData$diffD ~ gamingData$FinalExamination)
+summary(model)
+
+#now accounting for confounding variables: 
+
+#regression of final exam and average diff in Scores for Control 
+ggplot(control, aes(x = control$FinalExamination, y = control$diffinScores)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Mean Difference in Scores for control group") +geom_abline()
+model=lm(control$diffinScores ~ control$FinalExamination)
+summary(model)
+
+#regression of final exam and average diff in Scores for educational game
+ggplot(educational, aes(x=educational$FinalExamination, y = educational$diffinScores)) + geom_point()+
+  labs(x = "Final Examination Scores", y = "Mean Difference in Scores for educational game") + geom_abline()
+model = lm(educational$diffinScores ~ educational$FinalExamination)
+summary(model)
+
+#regression of final exam and average diff in Scores for gamification
+ggplot(gamification, aes(x=gamification$FinalExamination, y = gamification$diffinScores)) + geom_point()+
+  labs(x = "Final Examination Scores",y="Mean Difference in Scores for gamification") + geom_abline()
+model = lm(gamification$diffinScores ~ gamification$FinalExamination)
+summary(model)
+
+#regression of final exam and average diff in Scores for social networking
+ggplot(socialNet, aes(x = socialNet$FinalExamination, y = socialNet$diffinScores)) + geom_point()+
+  labs(x="Final Examination Scores", y = "Mean Difference in Score") + geom_abline()
+model = lm(socialNet$diffinscores ~ socialNet$FinalExamination)
+summary(model)
+
+#regression of final exam and average diff in Scores for social network and gamification
+ggplot(socialGam, aes(x = socialGam$FinalExamination, y = socialGam$diffinScores)) + geom_point()+
+  labs(x="Final Examination Scores", y = "Mean Difference in Scores for social net and gamification") + geom_abline()
+model = lm(socialGam$diffinScores ~ socialGam$FinalExamination)
+summary(model)
+
+stuffs <- gamingData %>%
+  as.data.frame(control,educational)
+model1 = lm(FinalExamination~diffinscores+Gender+diffW+diffP+diffS+diffD, data = gamingData)
+summary(model1)
+model2 = lm(FinalExamination~Gender+control+diffP+diffS+diffD, data = gamingData)
+summary(model2)
+
+model = lm(gamingData$FinalExamination~control$diffinscores+educational$diffinScores)
+
+
