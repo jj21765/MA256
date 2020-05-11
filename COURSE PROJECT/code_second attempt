@@ -1,0 +1,37 @@
+library(tidyverse)
+library(ggplot2)
+getwd()
+gaming <- read_csv("gamingscores.csv")
+
+gamingData <- gaming %>%
+  mutate("diffInScoresWord" = WordProcPosttest-WordProcPretest)%>%
+  mutate("diffInScoresSpread" = SpreadsheetsPosttest-SpreadsheetsPretest)%>%
+  mutate("diffInScoresPres" = PresentationPosttest-PresentationPretest)%>%
+  mutate("diffInScoresDat" = DatabasesPosttest-DatabasesPretest)
+
+
+#linear regression plot and statistics for Word Processor
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresWord)) + geom_point(aes(colour = factor(cyl)),size=4) + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Word Processor") +geom_abline()
+model1=lm(gamingData$diffInScoresWord ~ gamingData$FinalExamination)
+summary(model1)
+
+
+#linear regression plot and statistics for Spreadsheets
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresSpread)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Spreadsheets") +geom_abline()
+model2=lm(gamingData$diffInScoresSpread ~ gamingData$FinalExamination)
+summary(model2)
+
+#linear regression plot and statistics for Presentation
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresPres)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Presentation") +geom_abline()
+model3=lm(gamingData$diffInScoresPres ~ gamingData$FinalExamination)
+summary(model3)
+
+#linear regression plot and statistics for Databases
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresDat)) + geom_point() + 
+  labs(x = "Final Examination Scores", y = "Difference in Scores for Databases") +geom_abline()
+model3=lm(gamingData$diffInScoresDat ~ gamingData$FinalExamination)
+summary(model3)
+
