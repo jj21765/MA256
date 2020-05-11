@@ -1,0 +1,30 @@
+library(tidyverse)
+setwd(yay)
+
+#load data from 9.2
+recall <- read_table2('Recall.txt')
+
+#Five nmumber summary for 9.2 data
+recall %>%
+  group_by
+
+#aov function
+compANOVA <- aov(Comprehension ~ Condition, data = comprehension)
+#there is an anova function but we will use aov
+#its not tidy, so we need to tell it what data set were using, which is in this case comprehension
+#comprehension is a function of condition 
+#when you do summary(compANOVA), youll get the Mean sq, F value, P value 
+
+FSat_DF %>%
+  summarise(pvalue=sum(simFStat >= sampFStat)/n())
+
+#using PDF of f distribution
+1-pf(q=12.67, df1=2, df2 = 54)
+#all these values are from the summary 
+
+qnorm(.91)
+qnorm(0.09)
+qnorm(.75)
+qnorm(0.06)
+1-pnorm(0.4286)
+1-pnorm(4)
