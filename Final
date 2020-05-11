@@ -1,0 +1,142 @@
+---
+title: "KANG MA256 TEE AY20"
+subtitle: Esther Kang
+date: 5/9/2020
+output:
+  word_document: default
+  html_document: default
+---
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(patchwork)
+setwd("C:/Users/Lucas/Downloads")
+data <- read.csv("MA256-TEE-NHANES.csv")
+```
+
+PROBLEM 1: 
+
+ The research question to be explored in this problem is, Does the average years of education differ between the three different marital statuses? 
+
+ Null Hypothesis: The average years of education between the three marital statuses do not differ 
+ Alternate Hypothesis: The average years of education between the three marital statuses differ 
+
+  For this test, we will be using the one way ANOVA test as the hypothesis is comparing three means. The validity conditions for the ANOVA test is that either the sample size is at least 20 in all groups without strong skewness or outliers, or if less than 20, that the distribution of the response variable is roughly symmetric. The standard deviations of the samples are also approximately equal to each other, not being larger than 2x the value fo the smallest standard deviation. Based on the boxplot shown below, the data does not meet the first validity condition, as the sample distributions for each marital status are all strongly skewed with multiple outliers. 
+```{r}
+ggplot(data, aes(x = as.factor(HRMARTL), y = HREDUCYR, color = as.factor(HRMARTL))) + geom_boxplot() +labs(x = "Marital Status in years", y = "Years of Education", title = "Years of Education by Marital Status") + geom_dotplot(binaxis = 'y', dotsize = 0.01)+coord_flip() 
+
+data %>% group_by(HRMARTL) %>%
+  do(data.frame(t(quantile(.$HREDUCYR, probs = c(0,0.25,0.5,0.75,1)))))
+```
+  Based on the ANOVA table shown below, the p-value is 0.00383, which is less than 0.05, indicating strong evidence against the null hypothesis. Thus, there is strong evidence against the hypothesis that there is no difference in the years of education based on the three categories of marital status. 
+```{r}
+data_anov <- aov(HREDUCYR~HRMARTL, data = data); summary(data_anov)
+```
+
+  As this indicates there is an association between marital status and years of education, that can be further analyzed as to how cultural differences can also have an association to these two variables, and how based on culture individuals may value marriage over education or vice versa. Income could be a confouding variable, as how much income the household earns can also be associated with the number of years of education in a household. For further data, I would add another column that indicates the demographic area of these households, to further analyze how different cultures are spread out, which can then be studied alongside the risks for various diseases. This can help analyze possibly how demographics and the marital status or years of education could have a possible association to risk of disease. 
+
+PROBLEM 2: 
+
+  The research question to be explored in this problem is, Is there an assocation between age category and whether or not a person is currently married? 
+
+   Null Hypothesis: there is no association between age category and whether or not a person is currently married
+   Alternate Hypothesis: There is an association between age category and whether or not a person is currently married
+
+  For this test, as we are comparing two categorical variables, one being binary, we will be using the chi-squared test. The validity conditions for this test is that there are at least 10 observations in each cell, which would be each age category for whether or not they are married. Referring to the table shown below, there are at least 10 observations in each cell, so the validity conditions are met. To better analyze whether or not one was married, a new column was created where instead of having values of 1-3, the only values were "yes" and "no" indicating whether or not the individual was married. Another column, labeled age category, was then created to rename the values from 2-4 to characters, replacing with "two", "Three", and "four". By doing so, it allowed for the actual values to be added up in the total column when creating the table of the number of observations in each cell. 
+```{r}
+data_m <- data %>%
+  arrange(HRMARTL) %>%
+  add_column(married = NA, .after = "HHINCSC")
+for (i in 1:length(data_m$HRGNDR)){
+  if(data_m$HRMARTL[i] == 3){data_m$married[i] = "no"}
+  else if(data_m$HRMARTL[i]==1){data_m$married[i] = "yes"}
+  else {data_m$married[i] <- "no"}
+}
+data_m <- data_m %>%
+  add_column(agecat = NA, .after = "married")
+for (i in 1:length(data_m$HRGNDR)){
+  if(data_m$DMDHRAGZ[i] == 3){data_m$agecat[i] = "three"}
+  else if(data_m$DMDHRAGZ[i]==2){data_m$agecat[i] = "two"}
+  else {data_m$agecat[i] <- "four"}
+}
+data_m %>%
+  count(married,agecat) %>%
+  spread(agecat,n) %>%
+  mutate(Total = two + three + four)
+
+```
+  Based on the chi squared test, the p-value is less than 2.2*10^-16, which is less than 0.05, indicating very strong evidence against the null. Thus, there is strong evidence against the hypothesis that there is no association between age category and whether or not a person is currently married, meaning there is an association between the two variables. 
+```{r}
+chisq.test(x=data_m$married, y=data_m$DMDHRAGZ)
+```
+
+  Looking at the table, the greater the age category, the lower the number of people that are both married and not married. Seeing that both categories for marital status have the same trend, researchers could look into other confounding variables, possibly two different variables for being married and not being currently married. These confounding variables, such as demographics, or how much marriage is valued, income, and others could possibly explain why there is such an association between the age category and whether or not an individual is currently married.To test for these confounding variables, it may be helpful to create a linear regression to analyze if the addition of other variables changes the association between age category and whether or not one is married. Also, having further tests or surveys sent out to gather more data for additional variables as mentioned in part f) may help in the analysis of these associations. 
+
+PROBLEM 3:
+
+  The research question to be explored in this problem is, Is there an association between years of education and scaled household income? Does a person's gender change this association? 
+
+  MODEL 1:
+   Null Hypothesis: There is no association between years of education and scaled household income. 
+   Alternate Hypothesis: There is an association between years of education and scaled household income
+After these hypotheses are tested, the model can then be tested for a confounding variable, gender, by adjusting for gender, to see if gender changes this association. 
+  MODEL 2: (Model 1 with an added variable)
+    Null Hypothesis: there is no association between gender and the association between years of education and scaled household income
+    Alternate Hypothesis: there is an association betwene gender and the association between years of education and scaled household income
+
+Two different models were created to allow for better visual comparison of the two scatterplots or linear regression models and lines, and to allow for distinct analysis of the validity conditions. 
+
+MODEL 1
+  For this test, we are testing for the association between two quantitave variables, then testing for the association between multiple variables, so we will be using regression.The code below creates the least squares requression model. 
+```{r}
+model = lm(HHINCSC~HREDUCYR, data = data)
+```
+
+For linear regression, the validity conditions are that the residuals vs preidcted graph does not show strong evidence of curvature or other patterns and is rather linear, that the responses are independent of each other, that the histogram of the residuals is approximately symmetric with no large outliers, and that the residuals vs preidcted values graph shows a constant width below and above the line.In testing for linearity and equal variance, there doesnt seem to be a particulary distinct pattern other than the points seeming to be fairly linear, and the poitns are roughly equally distributed below and above the line, so these two validity conditions are met. The responses are also independent from one another as the data of one individudal has no affect on the data of another.
+```{r}
+#test for linearity and equal variance
+v1 <- model %>%
+  fortify() %>%
+  ggplot(aes(x = .fitted, y = .resid))+geom_point()  + geom_hline(yintercept = 0) + labs(x = "Predicted Values", y = "Residuals", title = "Residuals vs Predicted Values")
+
+#testing for normality
+v2 <- fortify(model) %>% ggplot(aes(x = .resid))+geom_histogram()+labs(x="Residuals", title = "Histogram of Residuals")
+v1+v2
+```
+Looking at the histogram, the distribution is fairly symmetric, and there isnt a notable number of significant outliers. Thus, all validity conditions for the least squares regression line or the linear model is met. 
+
+  Based on the summary of the model, the overall p-value is less than 2.2*10^-16, indicating strong evidence against the null hypothesis that there is no association between years of education and scaled household income. THe R squared value is 0.1363, meaning scaled household income accounts for 13.63% of the variance in years of education.
+```{r}
+summary(model)
+plot1 <- ggplot(data, aes(x = HREDUCYR, y = HHINCSC)) + geom_point() + geom_smooth(method="lm")
+```
+
+MODEL 2
+  Now looking at gender as a confounding variable, we can create a new model to account for all three variables. 
+```{r}
+model2 = lm(HHINCSC~HREDUCYR+HRGNDR, data = data)
+```
+Given the four validity conditions and the two graphs shown below, the graphs are similar to what was shown with the first model, with equal variance and linearity in the residuals vs predicted values, and a generally symmetrical shape of the residuals. Even with gender, the responses are still independent from one another as the repsonse of one individual or observational unit does not affec that of another. 
+```{r}
+#test for linearity and equal variance
+v3 <- model2 %>%
+  fortify() %>%
+  ggplot(aes(x = .fitted, y = .resid))+geom_point()  + geom_hline(yintercept = 0) + labs(x = "Predicted Values", y = "Residuals", title = "Residuals vs Predicted Values")
+
+v4  <- fortify(model2) %>% ggplot(aes(x = .resid))+geom_histogram()+labs(x="Residuals", title = "Histogram of Residuals")
+v3+v4
+```
+
+ This model added on gender as another explanatory variable, resulting in two different least squared regression lines in the same model. Once gender was added in as another explanatory variable, the p-value didn't change in that it is still a small enough value at 2.2*10^-16, which is much lower than 0.05, to indicate strong evidence against the null hypothesis that there is no association between gender and the association between years of education and scaled house income. Looking at this model, however, the R-squared value increased than that of the first model, to 0.1516, meaning 15.16% of the variation within the association between years of education and scaled house income is accounted for by gender. Thus, answering the initial research question and the hypotheses, adding gender into the model does change the association between years of education and scaled house income. 
+```{r}
+summary(model2)
+ggplot(data, aes(x = HREDUCYR, y = HHINCSC, color=as.factor(HRGNDR))) + geom_point() + geom_smooth(method="lm")
+
+```
+  
+  This test is statistically significant in that it has strong enough evidenge to indicate there is an association between the three variables. However, as this experiment was not randomly assigned, the results and analysis cannot be generalized to the population. This indicates the presence of possible confounding variables. To improve this test, more linear models could be created to see which confounding variables have the greatest effect on the association between years of education and scaled household income. These confounding variables could include those mentioned in the last two problems. In order to maket he data more generalizable, these surveys should be randomly assigned rather than assigned to everyone in the area. The current experiment leads to response bias as only those who want to respond would respond. Instead, by decreasing sample size and finding a way to ensure response from everyone randomly assigned to return a survey may allow for generalization of results and analysis. 
+ 
+
+Works Cited
+https://stackoverflow.com/questions/41942080/insert-a-blank-column-in-dataframe?rq=1
