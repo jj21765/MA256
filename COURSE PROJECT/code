@@ -1,0 +1,23 @@
+library(tidyverse)
+library(ggplot2)
+getwd()
+gaming <- read_csv("gamingscores.csv")
+
+gamingData <- gaming %>%
+  mutate("diffInScoresWord" = WordProcPosttest-WordProcPretest)%>%
+  mutate("diffInScoresSpread" = SpreadsheetsPosttest-SpreadsheetsPretest)%>%
+  mutate("diffInScoresPres" = PresentationPosttest-PresentationPretest)%>%
+  mutate("diffInScoresDat" = DatabasesPosttest-DatabasesPretest)
+
+
+#linear regression plot and statistics for Word Processor
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresWord)) + geom_point() + 
+  labs(x = "Difference in Scores for Word Processor", y = "Final Examination Scores") +geom_abline()
+model1=lm(gamingData$diffInScoresWord ~ gamingData$FinalExamination)
+summary(model1)
+
+#linear regression plot and statistics for Spreadsheets
+ggplot(gamingData, aes(x = gamingData$FinalExamination, y = gamingData$diffInScoresSpread)) + geom_point() + 
+  labs(x = "Difference in Scores for Spreadsheetsr", y = "Final Examination Scores") +geom_abline()
+model2=lm(gamingData$diffInScoresSpread ~ gamingData$FinalExamination)
+summary(model2)
